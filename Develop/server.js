@@ -25,3 +25,28 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
+
+// API Routes
+const dbPath = path.join(__dirname, 'db/db.json');
+
+app.get('/api/notes', (req, res) => {
+  const notes = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  res.json(notes);
+});
+
+app.post('/api/notes', (req, res) => {
+  const newNote = req.body;
+  newNote.id = Date.now().toString(); // Add a unique id
+  const notes = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  notes.push(newNote);
+  fs.writeFileSync(dbPath, JSON.stringify(notes));
+  res.json(newNote);
+});
+
+app.delete('/api/notes/:id', (req, res) => {
+  const noteId = req.params.id;
+  let notes = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  notes = notes.filter((note) => note.id !== noteId);
+  fs.writeFileSync(dbPath, JSON.stringify(notes));
+  res.json({ success: true });
+});
